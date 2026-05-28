@@ -1,0 +1,40 @@
+CREATE DATABASE poker_db;
+
+\c poker_db;
+
+-- Таблица пользователей
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) DEFAULT 'player' CHECK (role IN ('player', 'admin')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица турниров
+CREATE TABLE tournaments (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    start_time TIMESTAMP NOT NULL,
+    created_by INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица регистраций
+CREATE TABLE registrations (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    tournament_id INTEGER REFERENCES tournaments(id) ON DELETE CASCADE,
+    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, tournament_id)
+);
+
+-- Добавить тестового админа (пароль: admin123)
+INSERT INTO users (name, email, password_hash, role)
+VALUES ('Admin', 'admin@example.com', '$2a$10$YK9GQKjMxQzNqXqXqXqXqOqQqQqQqQqQqQqQqQqQqQqQqQqQq', 'admin');
+
+-- Добавить тестового игрока (пароль: player123)
+INSERT INTO users (name, email, password_hash, role)
+VALUES ('Player', 'player@example.com', '$2a$10$YK9GQKjMxQzNqXqXqXqXqOqQqQqQqQqQqQqQqQqQqQqQqQqQq', 'player');
